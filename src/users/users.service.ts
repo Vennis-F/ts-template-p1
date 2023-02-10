@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 import User from './user.entity';
 import CreateUserDto from './dto/createUser.dto';
 import { HttpExceptionResponse } from '../const/HttpExceptionResponse';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly filesService: FilesService,
   ) {}
 
   async getByEmail(email: string) {
@@ -39,5 +41,18 @@ export class UsersService {
       HttpExceptionResponse.USER_ID_NOT_FOUND,
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+    const avatar = await this.filesService.uploadPublicFile(
+      imageBuffer,
+      filename,
+    );
+    const user = await this.getById(userId);
+    await this.usersRepository.update(userId, {
+      ...user,
+      avatar,
+    });
+    return avatar;
   }
 }
