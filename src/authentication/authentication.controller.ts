@@ -13,28 +13,30 @@ import {
 import { Response } from 'express';
 import { AuthenticationService } from './authentication.service';
 import RegisterDto from './dto/register.dto';
-import RequestWithUser from './requestWithUser.interface';
-import { LocalAuthenticationGuard } from './localAuthentication.guard';
-import JwtAuthenticationGuard from './jwt-authentication.guard';
+import RequestWithUser from './model/requestWithUser.interface';
+import { LocalAuthenticationGuard } from './guard/local/localAuthentication.guard';
+import JwtAuthenticationGuard from './guard/jwt/jwt-authentication.guard';
 
 @Controller('authentication')
-@UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(ClassSerializerInterceptor) //Apply interceptors only this controller
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @Post('register')
   async register(@Body() registrationData: RegisterDto) {
     return this.authenticationService.register(registrationData);
+    ``;
   }
 
   @HttpCode(200)
   @UseGuards(LocalAuthenticationGuard)
   @Post('log-in')
-  async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
+  async logIn(@Req() request: RequestWithUser) {
     const { user } = request;
     const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-    response.set('Set-Cookie', cookie);
-    response.send(user);
+    // response.set('Set-Cookie', cookie);
+    request.res.set('Set-Cookie', cookie);
+    return user;
   }
 
   @HttpCode(200)

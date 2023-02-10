@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { ClassSerializerInterceptor } from '@nestjs/common';
+import { ExcludeNullInterceptor } from './utils/excludeNull.interceptor';
 declare const module: any;
 
 async function bootstrap() {
@@ -12,7 +13,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new ExcludeNullInterceptor());
 
   //For reload compile
   if (module.hot) {
